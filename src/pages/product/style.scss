@@ -1,0 +1,27 @@
+.product__img {
+  width: 300px;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 14px;
+}
+.product__single {
+  display: flex;
+//   align-items: center;
+
+  border: 1px solid #ccc;
+  border-radius: 10px;
+}
+.product__content {
+    display: flex;
+    flex-direction: column;
+}
+.product__content__title {
+    margin-top: 40px;
+  h1 {
+    font-size: 20px;
+    font-weight: 500;
+  }
+}
+.product__content__price {
+    padding-top:45px ;
+}

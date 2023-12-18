@@ -1,0 +1,16 @@
+.brand__box {
+    border-radius: 10px;
+    border: 1px solid #ccc;
+    margin-top:14px ;
+    padding:  14px 20px;
+    .brand__box__header {
+        background-color: #f5f5f5;
+        text-align: center;
+        align-items: center;
+        border-radius: 10px;
+        padding: 14px 8px;
+        h1 {
+            font-size:16px ;
+        }
+    }
+}

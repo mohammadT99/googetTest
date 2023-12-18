@@ -1,0 +1,21 @@
+.form__search{
+    display: flex;
+    width: 612px;
+    height: 37px;
+    border-radius: 10px;
+    border: 1px solid #ccc;
+    background-color: #f5f5f5;
+    overflow: hidden;
+    align-items: center;
+    justify-content: space-between;
+    padding:0 14px ;
+}
+.input-group {
+    background-color: #f5f5f5;
+    border: none;
+    outline: none;
+    &::placeholder {
+        font-size: 14px;
+        
+    }
+}

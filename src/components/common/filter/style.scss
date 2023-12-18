@@ -1,0 +1,10 @@
+.inventory {
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    padding: 5px 14px;
+    gap: 10px;
+    .check-label {
+        text-wrap: nowrap;
+        color: #777;
+    }
+}

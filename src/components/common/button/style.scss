@@ -1,0 +1,25 @@
+.login {
+    border: 1px solid #fe6501;
+    padding:8px 14px ;
+    border-radius: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #a21d1d;
+    vertical-align:-11px;
+}
+
+.success {
+    background-color: green;
+    padding: 18px;
+}
+
+.category {
+    display: flex;
+    align-items: center;
+    .link {
+        color:#909090;
+        margin-right:8px ;
+    }
+}
+

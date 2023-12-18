@@ -1,0 +1,11 @@
+.header__top {
+    display: flex;
+    justify-content: space-between;
+}
+
+.header__top__logo {
+    img {
+        width: 109px;
+        height: 32px;
+    }
+}

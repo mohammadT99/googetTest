@@ -1,0 +1,42 @@
+.dropdown {
+    margin-top: 14px;
+    border: 1px solid #ccc;
+    display: flex;
+    align-items: center;
+    padding: 5px 14px;
+    justify-content: space-between;
+    border-radius: 10px;
+    p {
+        color: #777;
+        margin-bottom: 0;
+    }
+    .icon  {
+        vertical-align: middle;
+    }
+   
+}
+
+.accordion {
+    .accordion-button  {
+        background: none !important;
+        display: flex;
+        justify-content:space-between;
+        margin-top:14px;
+        padding:8px 14px;
+        border:1px solid #ccc !important;
+        border-radius:10px !important;
+        background-color: none;
+        color: #777;
+       &::after {
+        display: none;
+       }
+       
+       
+    } 
+   
+} 
+.drop__down {
+    padding:8px 14px ;
+    border: 1px solid  #ccc;
+    border-radius: 10px;
+}
