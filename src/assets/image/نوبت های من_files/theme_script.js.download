@@ -1,0 +1,1259 @@
+var home_url_app = window.app_url;
+var timeout_duration_script = 25e3;
+$(".numberkey").keypress(function (e) {
+    //if the letter is not digit then display error and don't type anything
+    if (e.which != 8 && e.which != 0 && (e.which < 48 || e.which > 57)) {
+        //display error message
+        // $("#errmsg").html("فقط عدد").show().fadeOut("slow");
+        return false;
+    }
+});
+function defaultRestError(response) {
+    var status = response.status;
+    var errorMessage = '';
+    switch (status) {
+        case 400:
+            errorMessage = "لطفا تمامی فیلدها را وارد کنید.";
+            break;
+        case 0:
+            errorMessage = "خطا در اتصال به اینترنت.لطفا وضعیت اتصال به اینترنت را بررسی نمایید";
+            break;
+        case 502:
+            errorMessage = "502 خطا در سرور.لطفا دوباره تلاش کنید";
+            break;
+        case 503:
+            errorMessage = "503 خطا در سرور.لطفا دوباره تلاش کنید";
+            break;
+        case 404:
+            errorMessage = "صفحه درخواست شده یافت نشد";
+            break;
+        default:
+            errorMessage = status.concat("لطفا دوباره تلاش کنید");
+    }
+    toast_error(errorMessage)
+}
+function requestRest(waitme_element, formInputData, endpoint, successCallback, errorCallback) {
+    $.ajaxSetup({
+        headers: {
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+        }
+    });
+    // در غیر اینصورت اطلاعات دستگاه ارسال می شود.
+    var formData = formInputData;
+    // formData = {
+    //     'formInputData': formInputData,
+    // }
+
+    $.ajax({
+        method: 'POST', // define the type of HTTP verb we want to use (POST for our form)
+        url: window.app_url + endpoint, // the url where we want to POST
+        data: formData, // our data object
+        dataType: 'json',
+        // crossDomain: true,
+        cache: false,
+        beforeSend: function(bf){
+            waitMe_show(waitme_element)
+        },
+        error: function (response) {
+            waitMe_hide(waitme_element)
+            if (errorCallback !== undefined) {
+                errorCallback(response);
+                return;
+            }
+            defaultRestError(response);
+        },
+
+        success: function (data) {
+            console.log("%c SUCCESS", "background: #222; color: #bada55");
+            successCallback(data)
+        },
+        complete: function (data) {
+            waitMe_hide(waitme_element)
+        }
+
+    })
+}
+
+
+
+function inArray(needle, haystack) {
+    var length = haystack.length;
+    for(var i = 0; i < length; i++) {
+        if(haystack[i] == needle) return true;
+    }
+    return false;
+}
+
+
+
+$(document).ready(function () {
+
+    // *********************************** Filter Search
+    $('.filterbox input[type=radio]').each(function () {
+        if ($(this).prop('checked')) {
+            $(this).parents('.radio-inline').addClass('active');
+        }
+    });
+
+
+    $('input[type="radio"]').click(function () {
+        $('.filterbox').find('.radio-inline').removeClass('active');
+
+        $(this).parents('.filterbox, .actType_form').find('.radio-inline').removeClass('active');
+        if ($(this).is(':checked')) {
+            $(this).parents('.radio-inline').addClass('active');
+        }
+    });
+
+    $("#datebirth").datepicker({
+        changeMonth: true,
+        changeYear: true,
+        dateFormat: 'yy-mm-dd',
+        maxDate: "-10Y",
+        minDate: "-80Y",
+        yearRange: "-80:-10"
+    });
+
+
+    $(".chosen-select").chosen({
+        no_results_text: "موردی پیدا نشد!",
+        placeholder_text_multiple: 'انتخاب کنید',
+        rtl: true,
+        width: "100%",
+    });
+
+    $("#selectdate").datepicker({
+        changeMonth: true,
+        changeYear: true,
+        dateFormat: 'yy-mm-dd'
+    });
+
+
+    $("#datestartkar").datepicker({
+        changeMonth: true,
+        changeYear: true,
+        dateFormat: 'yy-mm-dd',
+        yearRange: "-40:+1"
+    });
+
+    $('[data-toggle="popover"]').popover({
+        html: true
+    });
+
+    $('.dropdown').on('show.bs.dropdown', function() {
+        $(this).find('.dropdown-menu').first().stop(true, true).slideDown();
+    });
+
+    // Add slideUp animation to Bootstrap dropdown when collapsing.
+    $('.dropdown').on('hide.bs.dropdown', function() {
+        $(this).find('.dropdown-menu').first().stop(true, true).slideUp();
+    });
+
+
+
+    $('.lastmainblog').flickity({
+        // options
+        cellAlign: 'right',
+        groupCells: true,
+        contain: true,
+        wrapAround:true,
+        rightToLeft: true,
+        // autoPlay: true,
+        pauseAutoPlayOnHover: true,
+        lazyLoad: 1,
+        prevNextButtons: false,
+        pageDots: true,
+        freeScroll: true,
+        draggable: false,
+        adaptiveHeight: true
+
+    });
+
+
+    $('.select--city').select2({
+        placeholder: "انتخاب به عنوان شهر",
+        dir: "rtl",
+    });
+    $('.select--expertise').select2({
+        placeholder: "انتخاب تخصص",
+        dir: "rtl",
+
+    });
+
+    $('.select-filter').select2({
+        placeholder: "انتخاب کنید",
+        dir: "rtl",
+
+    });
+
+    $(".filestyle").filestyle({placeholder: "No file", buttonText: "انتخاب فایل", 'buttonName' : 'btn-default'});
+    $("[data-toggle='tooltip']").tooltip();
+    $(".tooltip").tooltip();
+
+    $('a[data-confirm]').click(function (ev) {
+        var href = $(this).attr('href');
+        if (confirm($(this).attr('data-confirm'))){
+            window.location.href = href;
+        }
+        return false;
+    });
+
+
+
+    var msgform="";
+    var elementsForm = document.getElementsByTagName("INPUT");
+
+    for (var i = 0; i < elementsForm.length; i++) {
+        elementsForm[i].oninvalid =function(e) {
+            if (!e.target.validity.valid) {
+                switch(e.target.id){
+                    case 'password' :
+                        e.target.setCustomValidity("رمز عبور خود را وارد کنید");break;
+                    case 'username' :
+                        e.target.setCustomValidity("نام کاربری خود را وارد کنید");break;
+                    case 'mobile' :
+                        e.target.setCustomValidity("شماره موبایل خود را وارد کنید");break;
+                    default : e.target.setCustomValidity("مقدار فیلد نمی تواند خالی باشد");break;
+
+                }
+            }
+        };
+        elementsForm[i].oninput = function(e) {
+            e.target.setCustomValidity(msgform);
+        };
+    }
+
+});
+$('.categoryselect').select2({
+    // placeholder: 'انتخاب گروه آگهی ها',
+    theme: "classic",
+    dir: "rtl"
+});
+
+function toast_success(msg) {
+    toastr.clear(),
+    toastr.success(msg, {
+        timeOut: 0,
+        extendedTimeOut: 0
+    });
+}
+function toast_error(msg) {
+    toastr.clear(),
+    toastr.error(msg, {
+        timeOut: 0,
+        extendedTimeOut: 0
+    });
+}
+
+
+function ShowLoading(a) {
+    $("#loadinglayer2").remove();
+    $("body").append("<div id='loadinglayer2' class='style-2' style='display:none'><div class=\"loading-wheel\"></div></div>");
+    // a ? $("#loadinglayer2").html(a) : $("#loadinglayer2").html('....');
+    // a = ($(window).width() - $("#loadinglayer2").width()) / 2;
+    // var b = ($(window).height() - $("#loadinglayer2").height()) / 2;
+    // $("#loadinglayer2").css({
+    //     left: a + "px",
+    //     top: b + "px",
+    //     position: "fixed",
+    //     zIndex: "99"
+    // });
+    $("#loadinglayer2").fadeTo("slow", .6)
+}
+
+function HideLoading(a) {
+    $("#loadinglayer2").fadeOut("slow", function () {
+        $("#loadinglayer2").remove()
+    })
+}
+
+$(document).ready(function() {
+
+    $("#linkregisterindex").click(function (e) {
+        $('#loginuserModal').modal('hide');
+        e.preventDefault();
+    });
+
+    $("#linkloginindex").click(function (e) {
+        $('#registeruserModal').modal('hide');
+        e.preventDefault();
+    });
+
+
+});
+
+function clearform(element){
+    $(element)[0].reset();
+}
+
+
+
+$(function () {
+    $(".datepicker").datepicker({
+        dateFormat: 'yy-mm-dd',
+        isRTL: true,
+        changeMonth: true,
+        changeYear: true
+    });
+
+    $("#holiday").datepicker({
+        dateFormat: "yy-mm-dd",
+        isRTL: true,
+        onSelect: function(dateText, inst) {
+            var datemch = inst['selectedYear']+inst['selectedMonth']+inst['selectedDay'];
+            $("#added_day").append("<tr id='tr_"+datemch+"'><td><input type='hidden' name='holiday[]' value='"+dateText+"'>"+dateText+"</td><td><a href='javascript:void(0)' class='badge badge-danger' onclick='removeholiday("+datemch+");'><i class='fa fa-times-circle'></i> حذف</a></td></tr>");
+            // $('#datepicker2').datepicker('option', 'minDate', new JalaliDate(inst['selectedYear'],inst['selectedMonth'], inst['selectedDay']))
+        }
+    });
+});
+$('.timepicker').timepicker({
+    showMeridian: false,
+    defaultTime: "7:00 AM"
+});
+
+
+$('.timepicker_start').timepicker({
+    showMeridian: false,
+    defaultTime: "8:00 AM"
+});
+$('.timepicker_end').timepicker({
+    showMeridian: false,
+    defaultTime: "15:00 AM"
+});
+
+
+
+
+$('.in_timepicker').timepicker({
+    showMeridian: false,
+    defaultTime: "7:00 AM"
+});
+
+$('.end_timepicker').timepicker({
+    showMeridian: false,
+    defaultTime: "23:00 PM"
+});
+
+function removeholiday(day){
+    $("#tr_"+day).remove();
+    return false;
+}
+
+function toggle_show(element){
+    $('#'+element).toggle();
+}
+
+function checked_schedule_day(element){
+    $('#'+element).toggleClass("checked");
+}
+
+// $(function () {
+//     $('.always').change(function () {
+//         $('#dates').toggle(!this.checked);
+//     }).change(); //ensure visible state matches initially
+// });
+function go_page(link){
+    if (link.length > 0) {
+        window.location.href = link;
+    }
+    return false;
+}
+
+
+
+function number_format(number, decimals, dec_point, thousands_point) {
+
+    if (number == null || !isFinite(number)) {
+        throw new TypeError("number is not valid");
+    }
+
+    if (!decimals) {
+        var len = number.toString().split('.').length;
+        decimals = len > 1 ? len : 0;
+    }
+
+    if (!dec_point) {
+        dec_point = '.';
+    }
+
+    if (!thousands_point) {
+        thousands_point = ',';
+    }
+
+    number = parseFloat(number).toFixed(decimals);
+
+    number = number.replace(".", dec_point);
+
+    var splitNum = number.split(dec_point);
+    splitNum[0] = splitNum[0].replace(/\B(?=(\d{3})+(?!\d))/g, thousands_point);
+    number = splitNum.join(dec_point);
+
+    return number;
+}
+
+function show_login(){
+
+    $('#loginuserModal').modal({show: true});
+}
+
+function login_reserve(time, userid_office, office_id, get_date, get_special) {
+
+    $(".addoninputhidden").html("<input type='hidden' name='time' value='"+time+"'><input type='hidden' name='userid_office' value='"+userid_office+"'><input type='hidden' name='office_id' value='"+office_id+"'><input type='hidden' name='date' value='"+get_date+"'><input type='hidden' name='special' value='"+get_special+"'><input type='hidden' name='login_user_reserve' value='1'>")
+    $('#loginuserModal').modal({show: true});
+
+}
+
+
+function login_reserve_daftar(time) {
+
+    $(".addoninputhidden").html("<input type='hidden' name='time' value='"+time+"'><input type='hidden' name='login_user_reserve' value='1'>");
+    $(".addoninputhidden_register").html("<input type='hidden' name='login_user_reserve' value='1'>");
+    var form_hidden_reserve = "" +
+        "<form method='post' id='RESERVEFORM' action='"+home_url_app+"index.php' style='display: none;'>\n" +
+        "<input type='hidden' name='mod' value='search'>\n" +
+        "<input type='hidden' name='action' value='reserve'>\n" +
+        "<input type='hidden' name='time' value='"+time+"'>\n" +
+        "<input type='submit' value='reserve'>\n" +
+        "</form>";
+    $("#RESERVE_FORM_ADDON").html(form_hidden_reserve);
+    $('#loginuserModal').modal({show: true});
+
+}
+$('#printnobat').on('click', function(event){
+    event.preventDefault();
+    $('#nobatprint').printElement({
+        // css:'extend',
+        keepHide: ["#buttonprint", ".action_nobat",".alert"]
+    });
+});
+
+
+$('#printlogs').on('click', function(event){
+    event.preventDefault();
+    $('#logsprintnobat').printElement({
+        css:'extend',
+        keepHide: ["#buttonprint", ".dropdown", ".alert"]
+    });
+});
+
+
+$(document).ready(function(e) {
+
+
+    $("#zone_home").change(function (e) {
+        var forminputdata = {};
+        forminputdata.typeid = $(this).val();
+        console.log(forminputdata)
+        requestRest('.form_searchs', forminputdata, 'zonelist/', function(res){
+
+            var options = '';
+            for (var i = 0; i < res.length; i++) {
+                options += '<option value="' + res[i].optionValue + '">' + res[i].optionDisplay + '</option>';
+            }
+            $("#subzone_home").html(options);
+        })
+
+    });
+});
+
+
+
+
+function refresh_captcha(querySelector) {
+    document.querySelector(querySelector).src = home_url_app  + 'captchacode/?a=' + Date.now();
+}
+
+function check_mobile(queryElement) {
+    // var regExp = /09(0[0-9]|1[0-9]|3[1-9]|2[1-9]|9[1-9]|4[1-9]|3[0-9]|2[0-9]|9[1-9]|4[1-9]|3[0-9]|2[0-9]|9[9-?0])-?[0-9]{3}-?[0-9]{4}/;
+    // var text = $(queryElement).val();
+    // if(!regExp.test(text)){
+    if (!preg_match('/09\d{9}/', $mobile)){
+        $(queryElement).focus();
+        toast_error('فرمت شماره تلفن وارد شده اشتباه است');
+        return false;
+    }
+}
+
+function validate_search() {
+    if (document.searchhome.city.value == "0"){
+        toast_error("لطفا استان خود را انتخاب کنید");
+        document.searchhome.city.focus();
+        return false;
+    }
+    return( true );
+}
+
+function change_nationality(param) {
+    var getvalue = $(param).val();
+    if (getvalue == "iran"){
+        $("#codemeli_div").show();
+        $("#codefaragir_div").hide();
+
+    } else {
+        $("#codemeli_div").hide();
+        $("#codefaragir_div").show();
+    }
+}
+
+function cancel_member_reserve(reserve_id) {
+    var retVal = confirm("در صورتی که طی 60 روز گذشته بیش از 3 نوبت را لغو کرده باشید، با لغو این نوبت، امکان دریافت نوبت مجدد توسط شما وجود ندارد. برای لغو این نوبت مطمئن هستید؟");
+    if( retVal == true ) {
+
+        var forminputdata = {};
+        forminputdata.rid = reserve_id;
+        requestRest('body', forminputdata, 'cancel_nobat/', function(result) {
+            if (result.error == "no") {
+                toast_success(result.res);
+                $("#reserveid_" + reserve_id).fadeOut("slow");
+            } else {
+                toast_error(result.error)
+            }
+        })
+        return true;
+    }
+}
+
+
+$("#EditProfile").submit(function (e) {
+
+    var forminputdata = $(this).serialize();
+    requestRest('body', forminputdata, 'profile_save/', function(res) {
+        console.log(res)
+        if (res.status == 'error') {
+            $("#error").html("<div class='alert alert-danger'>" + res.message + "</div>");
+        } else {
+            $("#error").html("<div class='alert alert-success'>" + res.message + "</div>");
+
+            location.reload();
+        }
+    })
+
+
+    e.preventDefault();
+});
+
+
+$('#registerformnew').validator().on('submit', function (e) {
+    if ( !e.isDefaultPrevented() ) {
+
+        var forminputdata = $(this).serialize();
+        requestRest('#registerformnew', forminputdata, 'registernew/', function(res) {
+            if (res.stop == false){
+				$(".mobilenumberfreg").html(res.mobile);
+                $("#registerformnew").slideUp();
+                $("#registerform_verfication").slideDown();
+                toast_success("کد تایید ارسال شده را وارد کنید");
+            } else {
+                if (res.sec_code_error == "yes"){
+                    refresh_captcha('.captcha_image_reg')
+                }
+                toast_error(res.stop);
+            }
+
+            $("#alertregisterexpire").html(res.stop_expiretime)
+        })
+
+
+    }
+    e.preventDefault();
+});
+
+$("#registerform_verfication").validator().on('submit', function (e) {
+    if ( !e.isDefaultPrevented() ) {
+        var verfcode = $("#verfcode").val();
+        var forminputdata = {};
+        forminputdata.code = verfcode;
+        requestRest('#registerform_verfication', forminputdata, 'verfy_register/', function(res) {
+            if (res.stop != false) {
+                refresh_captcha('.captcha_image_reg')
+                toast_error(res.stop);
+                if(res.stop_talash_expire == "yes"){
+                    $("#registerform_verfication").hide();
+                    $("#formregistercompleted").hide();
+                    $("#registerformnew").show();
+                }
+            } else {
+                $(".mobilenumberfreg").html(res.mobile);
+                $("#registerform_verfication").slideUp();
+                $("#formregistercompleted").slideDown();
+            }
+        })
+
+    }
+    e.preventDefault();
+});
+
+$('#formregistercompleted').validator().on('submit', function (e) {
+    if ( !e.isDefaultPrevented() ) {
+
+        var forminputdata = $(this).serialize();
+        requestRest('#formregistercompleted', forminputdata, 'registercomplated/', function(res) {
+            if (res.status == 'error') {
+                $("#error_regcomp").html("<div class='alert alert-danger'>" + res.message + "</div>");
+            } else {
+                if (res.login_user_reserve == 1) {
+                    if (!alert(res.message)) {
+                        // document.getElementById('RESERVEFORM').submit(); // SUBMIT FORM
+                        $("#RESERVEFORM").submit();
+                    }
+                } else {
+                    if (!alert(res.message)) {
+                        window.location.href = home_url_app + "index.php?mod=users";
+                    }
+                }
+            }
+        })
+
+    }
+    e.preventDefault();
+});
+
+
+
+// ===========================================================================
+// ---- profile
+// ===========================================================================
+$('#formNobatfogholade').validator().on('submit', function (e) {
+    if ( !e.isDefaultPrevented() ) {
+		var getSpecial = $('#specialget').val();
+		var type_pelak = $("#type_pelak").val();
+		//var special = $("#special").val();
+		var special = getSpecial;
+		var error = 0;
+		if (type_pelak == 0) {
+			toast_error("لطفا نوع وسیله نقلیه را انتخاب کنید");
+			error = 1;
+			return false;
+		}
+		/*alert(document.formNobatfogholade.txtmotor0.value);
+		if (special == 13 ) {
+			if (type_pelak == 'motor') {
+				if (document.formNobatfogholade.txtmotor0.value.length < 2 || !/^[1-9]{2,3}$/.test(document.formNobatfogholade.txtmotor0.value)) {
+					toast_error("لطفا شماره پلاک موتورسیکلت را کامل وارد نمایید");
+					document.formNobatfogholade.txtmotor0.focus();
+					error = 1;
+					return false;
+				}
+				if (document.formNobatfogholade.txtmotor1.value.length < 4 || !/^[1-9]{4,5}$/.test(document.formNobatfogholade.txtmotor1.value)) {
+					toast_error("لطفا شماره پلاک موتورسیکلت را کامل وارد نمایید");
+					document.formNobatfogholade.txtmotor1.focus();
+					error = 1;
+					return false;
+				}
+			}
+		}		
+		
+		*/
+        var forminputdata = $(this).serialize();
+        requestRest('#formregistercompleted', forminputdata, 'sabenobatfogholade/', function(res) {
+            if (res.status === "yes"){
+                $("#khatafg").hide();
+                $("#nbfoghaladeModal").modal("hide");
+                toast_success(res.msg);
+            } else {
+                $("#khatafg").show();
+                $("#khatafg_msg").html(res.stop);
+            }
+
+        })
+    }
+    e.preventDefault();
+});
+
+// ===========================================================================
+// ===========================================================================
+
+$('#formReserve').validator().on('submit', function (e) {
+    e.preventDefault()
+    $("#error_reserve").hide();
+
+    var getSpecial = $('#specialget').val();
+    var type_pelak = $("#type_pelak").val();
+    //var special = $("#special").val();
+    var special = getSpecial;
+    var error = 0;
+    if (type_pelak == 0) {
+        toast_error("لطفا نوع وسیله نقلیه را انتخاب کنید");
+        error = 1;
+        return false;
+    }
+
+    if (type_pelak != "keshavarzi" && type_pelak != "gozar_movaghat" && type_pelak != "manategh_azad" && type_pelak != "manategh_azad_old") {
+
+        if (special == 15 || special == 16) {
+            if (document.formreserve.shomare_shasi.value.length < 10 || !/^[0-9,a-z,A-Z]{10,20}$/.test(document.formreserve.shomare_shasi.value)) {
+                toast_error("شماره شاسی را کامل وارد نمایید");
+                document.formreserve.shomare_shasi.focus();
+                error = 1;
+                return false;
+            }
+        } else {
+            if (special != 14 && special != 15 && special != 16) {
+                if (type_pelak == 'motor') {
+                    if (document.formreserve.txtmotor0.value.length < 2 || !/^[1-9]{2,3}$/.test(document.formreserve.txtmotor0.value)) {
+                        toast_error("لطفا شماره پلاک موتورسیکلت را کامل وارد نمایید");
+                        document.formreserve.txtmotor0.focus();
+                        error = 1;
+                        return false;
+                    }
+                    if (document.formreserve.txtmotor1.value.length < 4 || !/^[1-9]{4,5}$/.test(document.formreserve.txtmotor1.value)) {
+                        toast_error("لطفا شماره پلاک موتورسیکلت را کامل وارد نمایید");
+                        document.formreserve.txtmotor1.focus();
+                        error = 1;
+                        return false;
+                    }
+                } else {
+
+                    if (document.formreserve.txtnation0.value.length < 2 || !/^[1-9]{1}[0-9]{1}$/.test(document.formreserve.txtnation0.value)) {
+                        toast_error("لطفا شماره پلاک خودرو را کامل وارد نمایید");
+                        document.formreserve.txtnation0.focus();
+                        error = 1;
+                        return false;
+                    }
+
+                    if (document.formreserve.txtnation3.value.length < 3 || !/^[1-9]{3}$/.test(document.formreserve.txtnation3.value)) {
+                        toast_error("لطفا شماره پلاک خودرو را کامل وارد نمایید");
+                        document.formreserve.txtnation3.focus();
+                        error = 1;
+                        return false;
+                    }
+
+                    if (document.formreserve.txtnation2.value == "0") {
+                        toast_error("لطفا حرف پلاک خودرو را انتخاب نمایید");
+                        document.formreserve.txtnation1.focus();
+                        error = 1;
+                        return false;
+                    }
+
+                    if (document.formreserve.txtnation1.value.length < 2 || !/^[1-9]{2}$/.test(document.formreserve.txtnation1.value)) {
+                        toast_error("لطفا شماره پلاک خودرو را کامل وارد نمایید");
+                        document.formreserve.txtnation1.focus();
+                        error = 1;
+                        return false;
+                    }
+                }
+            }
+        }
+    } else if (type_pelak == "gozar_movaghat") {
+        
+	if (document.formreserve.gzmf4.value.length < 5 || !/^[0-9]{2}\/(0?[1-9]|1[012])$/.test(document.formreserve.gzmf4.value)) {
+			toast_error("لطفا شماره پلاک خودرو را کامل وارد نمایید");
+			document.formreserve.gzmf4.focus();
+			error = 1;
+			return false;
+		}
+		
+		if (document.formreserve.gzmf3.value.length < 2 || !/^[1-9]{1}[0-9]{1}$/.test(document.formreserve.gzmf3.value)) {
+			toast_error("لطفا شماره پلاک خودرو را کامل وارد نمایید");
+			document.formreserve.gzmf3.focus();
+			error = 1;
+			return false;
+		}
+
+		if (document.formreserve.gzmf2.value.length < 3 || !/^[1-9]{3}$/.test(document.formreserve.gzmf2.value)) {
+			toast_error("لطفا شماره پلاک خودرو را کامل وارد نمایید");
+			document.formreserve.gzmf2.focus();
+			error = 1;
+			return false;
+		}
+
+		if (document.formreserve.gzmf1.value.length < 2 || !/^[1-9]{2}$/.test(document.formreserve.gzmf1.value)) {
+			toast_error("لطفا شماره پلاک خودرو را کامل وارد نمایید");
+			document.formreserve.gzmf1.focus();
+			error = 1;
+			return false;
+		}
+    }
+    else if (type_pelak == "manategh_azad"){
+        if (document.formreserve.manategh_azad_2.value.length < 2 || !/^[1-9]{2,3}$/.test(document.formreserve.manategh_azad_2.value)) {
+            toast_error("لطفا شماره پلاک خودرو را کامل وارد نمایید");
+            document.formreserve.manategh_azad_2.focus();
+            error = 1;
+            return false;
+        }
+        if (document.formreserve.manategh_azad_1.value.length < 5 || !/^[1-9]{5,6}$/.test(document.formreserve.manategh_azad_1.value)) {
+            toast_error("لطفا شماره پلاک خودرو را کامل وارد نمایید");
+            document.formreserve.manategh_azad_1.focus();
+            error = 1;
+            return false;
+        }
+	}	
+	else if (type_pelak == "manategh_azad_old"){
+        if (document.formreserve.manategh_azad_old_1.value.length < 5 || !/^[1-9]{5,6}$/.test(document.formreserve.manategh_azad_old_1.value)) {
+            toast_error("لطفا پلاک قدیمی منطقه آزاد را کامل وارد کنید");
+            document.formreserve.manategh_azad_old_1.focus();
+            error = 1;
+            return false;
+			
+			if (document.formreserve.manategh_azad_old_3.value == "0") {
+				toast_error("لطفا منطقه آزاد را انتخاب نمایید");
+				document.formreserve.manategh_azad_old_3.focus();
+				error = 1;
+				return false;
+			}
+        }	
+
+    } else  {
+
+        // اگر احراز محل سکونت و مزایده ای و وارداتی نبود
+        if (special != 14 && special != 15 && special != 16) {
+
+            if (document.formreserve.shomare_shasi.value != "" ) {
+                if (document.formreserve.shomare_shasi.value.length < 10 || !/^[0-9,a-z,A-Z]{10,20}$/.test(document.formreserve.shomare_shasi.value) ) {
+                    toast_error("لطفا شماره شاسی را کامل وارد نمایید");
+                    document.formreserve.shomare_shasi.focus();
+                    error = 1;
+                    return false;
+                }
+            }
+
+            if (
+                document.formreserve.txtnation0.value != ""  ||
+                document.formreserve.txtnation3.value != ""  ||
+                document.formreserve.txtnation1.value != ""  ||
+                document.formreserve.txtnation2.value != "0"
+            ) {
+                if (document.formreserve.txtnation0.value.length < 2 || !/^[1-9]{1}[0-9]{1}$/.test(document.formreserve.txtnation0.value) ) {
+                    toast_error("لطفا شماره پلاک خودرو را کامل وارد نمایید");
+                    document.formreserve.txtnation0.focus();
+                    error = 1;
+                    return false;
+                }
+
+                if (document.formreserve.txtnation3.value.length < 3 || !/^[1-9]{3}$/.test(document.formreserve.txtnation3.value) ) {
+                    toast_error("لطفا شماره پلاک خودرو را کامل وارد نمایید");
+                    document.formreserve.txtnation3.focus();
+                    error = 1;
+                    return false;
+                }
+
+                if (document.formreserve.txtnation2.value == "0" ) {
+                    toast_error("لطفا حرف پلاک خودرو را انتخاب نمایید");
+                    document.formreserve.txtnation1.focus();
+                    error = 1;
+                    return false;
+                }
+
+                if (document.formreserve.txtnation1.value.length < 2 || !/^[1-9]{2}$/.test(document.formreserve.txtnation1.value) ) {
+                    toast_error("لطفا شماره پلاک خودرو را کامل وارد نمایید");
+                    document.formreserve.txtnation1.focus();
+                    error = 1;
+                    return false;
+                }
+            }
+
+            var validate_shomareshasi_keshavarzi = 0;
+            if (document.formreserve.shomare_shasi.value.length >= 10) {
+                validate_shomareshasi_keshavarzi = 1;
+            }
+
+            var validate_pelak_keshavarzi = 0;
+            if (
+                document.formreserve.txtnation0.value.length == 2 &&
+                document.formreserve.txtnation3.value.length == 3 &&
+                document.formreserve.txtnation1.value.length == 2 &&
+                document.formreserve.txtnation2.value != "0"
+            ) {
+                validate_pelak_keshavarzi = 1;
+            }
+
+            if (!validate_pelak_keshavarzi && !validate_shomareshasi_keshavarzi) {
+                toast_error("لطفا شماره پلاک یا شماره شاسی وسیله نقلیه را بصورت کامل وارد نمایید");
+                error = 1;
+                return false;
+            }
+
+        }
+    }
+
+    if (error === 0){
+
+        var forminputdata = $(this).serialize();
+        requestRest('body', forminputdata, 'reserve_nobat/', function(res) {
+            if (res.status == 'yes'){
+                $("#error_reserve").show();
+                $("#error_reserve").html('<div class="alert alert-success"><strong>نوبت شما ثبت شد</strong><p>کد پیگیری: '+res.trackingcode+'</p></div>');
+                toast_success("نوبت شما ثبت شد. در حال هدایت ...")
+
+                window.location.href = home_url_app + "print_nobat/" +  res.rid + '/';
+
+            } else
+            {
+                $("#sec_code_reserve").val("");
+                refresh_captcha('.captcha_image_reserve');
+                $("#error_reserve").show();
+                $("#error_reserve").html('<div class="alert alert-danger"><strong>لطفا موارد زیر را اصلاح کنید</strong><ul>'+res.msg+'</ul></div>');
+            }
+            console.log(res)
+        },
+            function (err) {
+                console.log(err)
+            })
+    }
+});
+
+
+$("#type_pelak").change(function () {
+
+    var getSpecial = $('#specialget').val();
+
+    var typePelak_array = {
+        "01" : "الف",
+        "02" : "ب",
+        "03" : "ت",
+        "04" : "ج",
+        "05" : "د",
+		"17" : "ر",
+        "19" : "&#9855;",
+        "06" : "س",
+        "07" : "ص",
+        "08" : "ط",
+        "09" : "ع",
+        "10" : "ق",
+        "18" : "ک",
+        "11" : "ل",
+        "12" : "م",
+        "13" : "ن",
+        "14" : "و",
+        "15" : "ه",
+        "16" : "ي",
+    };
+    var type_pelak = $(this).val();
+
+    if (type_pelak == "khodro"){
+        ['01', '03', '09', '18'].forEach(e => delete typePelak_array[e]);
+    }
+
+    if (type_pelak == "khodro_dolati"){
+        ['02', '03', '09', '04', '05', '06', '07', '08', '10', '11', '12', '13', '14', '15', '16', '17', '19', '18', '19'].forEach(e => delete typePelak_array[e]);
+    }
+
+    if (type_pelak == "savari_omoomi"){
+        ['01', '02', '03', '04', '05', '06', '07', '08', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19'].forEach(e => delete typePelak_array[e]);
+    }
+
+    if (type_pelak == "vanet"){
+        ['03', '18', '09', '01'].forEach(e => delete typePelak_array[e]);
+    }
+
+    if (type_pelak == "vanet_doulati"){
+        // فقط الف
+        ['02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19'].forEach(e => delete typePelak_array[e]);
+    }
+
+    if (type_pelak == "khodro_sangin"){
+        // فقط الف و ع
+		['02', '03', '04', '05', '06', '07', '08', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19'].forEach(e => delete typePelak_array[e]);
+		//['03', '18'].forEach(e => delete typePelak_array[e]);
+    }
+
+    if (type_pelak == "vanet_omoomi"){
+        ['01','02', '03', '04', '05', '06', '07', '08', '10', '11', '12', '13', '14', '15', '16', '19', '17', '18', '19'].forEach(e => delete typePelak_array[e]);
+    }
+
+    if (type_pelak == "taxi"){
+        ['01', '02', '04', '05', '06', '07', '08', '09', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19'].forEach(e => delete typePelak_array[e]);
+    }
+
+    if (type_pelak == "keshavarzi"){
+        ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12', '13', '14', '15', '16', '17', '19'].forEach(e => delete typePelak_array[e]);
+    }
+    
+	/*var sortable = [];
+	for (var pelak in typePelak_array)
+	{
+		sortable.push([pelak,typePelak_array[pelak]]);
+	}
+	sortable.sort(function (a,b){ 
+		var x=a[1],y=b[1];
+		return x<y ? -1 : x>y ? 1 :0;
+	});*/
+
+    var optionlist = '<option value="0">--</option>';
+    $.each(typePelak_array, function(key, val) {
+        optionlist += "<option value='"+key+"'>"+val+"</option>";
+    });
+    $("#pelak_abc").html(optionlist);
+	
+	$("#manategh_azad_old_abc").html("<OPTION value=0>--</OPTION>"+
+									"<OPTION value=1316>چابهار</OPTION>"+
+									"<OPTION value=2126>اروند</OPTION>"+
+									"<OPTION value=1414>سيرجان</OPTION>"+
+									"<OPTION value=2322>كيش</OPTION>"+
+									"<OPTION value=2320>قشم</OPTION>"+
+									"<OPTION value=3219>انزلي</OPTION>"+
+									"<OPTION value=1890>ارس</OPTION>"+
+									"<OPTION value=1711>ماکو</OPTION>");
+
+
+    if (type_pelak == "keshavarzi"){
+        $("#divp3").show();
+        $("#divp1").show();
+		$("#div_plate").show();
+        $("#divp2").hide();
+        $("#gozar_movaghat_div").hide();
+        $("#manategh_azad_div").hide();
+		$("#manategh_azad_old_div").hide();
+    }
+    else if (type_pelak == "motor"){
+        $("#divp2").show();
+        $("#divp1").hide();
+		$("#div_plate").hide();
+        $("#gozar_movaghat_div").hide();
+        $("#manategh_azad_div").hide();
+		$("#manategh_azad_old_div").hide();
+    }
+    else if (type_pelak != 0 && type_pelak != 'keshavarzi' && type_pelak != "gozar_movaghat" && type_pelak != "manategh_azad" && type_pelak != "manategh_azad_old" ) {
+        $("#divp1").show();
+		$("#div_plate").show();
+        $("#divp2").hide();
+        $("#gozar_movaghat_div").hide();
+        $("#manategh_azad_div").hide();
+		$("#manategh_azad_old_div").hide();
+
+    }
+    else if (type_pelak == "gozar_movaghat") {
+
+        $("#divp1").hide();
+		$("#div_plate").hide();
+        $("#divp2").hide();
+        $("#divp3").hide();
+        $("#manategh_azad_div").hide();
+        $("#gozar_movaghat_div").show();
+		$("#manategh_azad_old_div").hide();
+    }
+    else if (type_pelak == "manategh_azad"){
+
+        $("#divp1").hide();
+		$("#div_plate").hide();
+        $("#divp2").hide();
+        $("#divp3").hide();
+        $("#gozar_movaghat_div").hide();
+        $("#manategh_azad_div").show();
+		$("#manategh_azad_old_div").hide();
+    }
+	else if (type_pelak == "manategh_azad_old"){
+
+        $("#divp1").hide();
+		$("#div_plate").hide();
+        $("#divp2").hide();
+        $("#divp3").hide();
+        $("#gozar_movaghat_div").hide();
+        $("#manategh_azad_div").hide();
+		$("#manategh_azad_old_div").show();
+    }	else {
+        $("#divp1").hide();
+		$("#div_plate").hide();
+        $("#divp2").hide();
+        $("#gozar_movaghat_div").hide();
+        $("#manategh_azad_div").hide();
+		$("#manategh_azad_old_div").hide();
+    }
+
+    var special = getSpecial;
+    if (special == 15 || special == 16){
+        $("#divp2").hide();
+        $("#divp1").hide();
+		$("#div_plate").hide();
+        $("#divp3").show();
+
+    } else if (special == 14){
+        $("#divp3").hide();
+        $("#divp2").hide();
+        $("#divp1").hide();
+		$("#div_plate").hide();
+
+    } else {
+        if ( type_pelak != 'keshavarzi' ) {
+            $("#divp3").hide();
+
+        }
+    }
+
+    if (special == 13) {
+        // console.log('aaaa')
+    }
+});
+
+
+
+function check_typepelak(){
+    var type_pelak = $("#type_pelak").val();
+    $("#divp1").hide();
+	$("#div_plate").hide();
+    $("#divp2").hide();
+    $("#gozar_movaghat_div").hide();
+    $("#manategh_azad_div").hide();
+
+    if (type_pelak != 0 && type_pelak != "gozar_movaghat" && type_pelak != "manategh_azad"){
+        $("#divp1").show();
+		$("#div_plate").show();
+    }
+    if (type_pelak == "motor"){
+        $("#divp2").show();
+    }
+
+    if (type_pelak == "gozar_movaghat"){
+        $("#gozar_movaghat_div").show();
+    }
+    if (type_pelak == "manategh_azad"){
+        $("#manategh_azad_div").show();
+    }
+}
+
+$("#vicarship_term").click(function () {
+	$("#has_vicarship").hide();
+	if ($("#vicarship_term").is(':checked'))
+	{
+		$("#has_vicarship").show();
+	}
+});
+
+$("#manategh_azad_1").keyup(function () {
+	x = $("#manategh_azad_1").val();
+	$("#manategh_azad_3").val(x);
+	
+});
+
+$("#manategh_azad_2").keyup(function () {
+	x = $("#manategh_azad_2").val();
+	$("#manategh_azad_4").val(x);
+	
+});
+$("#manategh_azad_old_1").keyup(function () {
+	x = $("#manategh_azad_old_1").val();
+	$("#manategh_azad_old_2").val(x);
+	
+});
+// function validate() {
+//     var getSpecial = $('#specialget').val();
+//     var type_pelak = $("#type_pelak").val();
+//     //var special = $("#special").val();
+//     var special = getSpecial;
+//
+//     if (type_pelak == 0) {
+//         toast_error("لطفا نوع وسیله نقلیه را انتخاب کنید");
+//         return false;
+//     }
+//
+//     if (type_pelak != "keshavarzi") {
+//
+//         if (special == 15 || special == 16) {
+//             if (document.formreserve.shomare_shasi.value.length < 10 || !/^[0-9,a-z,A-Z]{10,20}$/.test(document.formreserve.shomare_shasi.value) ) {
+//                 toast_error("شماره شاسی را کامل وارد نمایید");
+//                 document.formreserve.shomare_shasi.focus();
+//                 return false;
+//             }
+//         } else {
+//             if (special != 14 && special != 15 && special != 16) {
+//                 if (type_pelak == 'motor') {
+//                     if (document.formreserve.txtmotor0.value.length < 2 || !/^[1-9]{2,3}$/.test(document.formreserve.txtmotor0.value) ) {
+//                         toast_error("لطفا شماره پلاک موتورسیکلت را کامل وارد نمایید");
+//                         document.formreserve.txtmotor0.focus();
+//                         return false;
+//                     }
+//                     if (document.formreserve.txtmotor1.value .length < 4 || !/^[1-9]{4,5}$/.test(document.formreserve.txtmotor1.value) ) {
+//                         toast_error("لطفا شماره پلاک موتورسیکلت را کامل وارد نمایید");
+//                         document.formreserve.txtmotor1.focus();
+//                         return false;
+//                     }
+//                 } else {
+//
+//                     if (document.formreserve.txtnation0.value.length < 2 || !/^[1-9]{1}[0-9]{1}$/.test(document.formreserve.txtnation0.value) ) {
+//                         toast_error("لطفا شماره پلاک خودرو را کامل وارد نمایید");
+//                         document.formreserve.txtnation0.focus();
+//                         return false;
+//                     }
+//
+//                     if (document.formreserve.txtnation3.value.length < 3 || !/^[1-9]{3}$/.test(document.formreserve.txtnation3.value) ) {
+//                         toast_error("لطفا شماره پلاک خودرو را کامل وارد نمایید");
+//                         document.formreserve.txtnation3.focus();
+//                         return false;
+//                     }
+//
+//                     if (document.formreserve.txtnation2.value == "0" ) {
+//                         toast_error("لطفا حرف پلاک خودرو را انتخاب نمایید");
+//                         document.formreserve.txtnation1.focus();
+//                         return false;
+//                     }
+//
+//                     if (document.formreserve.txtnation1.value.length < 2 || !/^[1-9]{2}$/.test(document.formreserve.txtnation1.value) ) {
+//                         toast_error("لطفا شماره پلاک خودرو را کامل وارد نمایید");
+//                         document.formreserve.txtnation1.focus();
+//                         return false;
+//                     }
+//                 }
+//             }
+//         }
+//     } else /*کشاورزی بود*/ {
+//
+//         // اگر احراز محل سکونت و مزایده ای و وارداتی نبود
+//         if (special != 14 && special != 15 && special != 16) {
+//
+//             if (document.formreserve.shomare_shasi.value != "" ) {
+//                 if (document.formreserve.shomare_shasi.value.length < 10 || !/^[0-9,a-z,A-Z]{10,20}$/.test(document.formreserve.shomare_shasi.value) ) {
+//                     toast_error("لطفا شماره شاسی را کامل وارد نمایید");
+//                     document.formreserve.shomare_shasi.focus();
+//                     return false;
+//                 }
+//             }
+//
+//             if (
+//                 document.formreserve.txtnation0.value != ""  ||
+//                 document.formreserve.txtnation3.value != ""  ||
+//                 document.formreserve.txtnation1.value != ""  ||
+//                 document.formreserve.txtnation2.value != "0"
+//             ) {
+//                 if (document.formreserve.txtnation0.value.length < 2 || !/^[1-9]{1}[0-9]{1}$/.test(document.formreserve.txtnation0.value) ) {
+//                     toast_error("لطفا شماره پلاک خودرو را کامل وارد نمایید");
+//                     document.formreserve.txtnation0.focus();
+//                     return false;
+//                 }
+//
+//                 if (document.formreserve.txtnation3.value.length < 3 || !/^[1-9]{3}$/.test(document.formreserve.txtnation3.value) ) {
+//                     toast_error("لطفا شماره پلاک خودرو را کامل وارد نمایید");
+//                     document.formreserve.txtnation3.focus();
+//                     return false;
+//                 }
+//
+//                 if (document.formreserve.txtnation2.value == "0" ) {
+//                     toast_error("لطفا حرف پلاک خودرو را انتخاب نمایید");
+//                     document.formreserve.txtnation1.focus();
+//                     return false;
+//                 }
+//
+//                 if (document.formreserve.txtnation1.value.length < 2 || !/^[1-9]{2}$/.test(document.formreserve.txtnation1.value) ) {
+//                     toast_error("لطفا شماره پلاک خودرو را کامل وارد نمایید");
+//                     document.formreserve.txtnation1.focus();
+//                     return false;
+//                 }
+//             }
+//
+//             var validate_shomareshasi_keshavarzi = 0;
+//             if (document.formreserve.shomare_shasi.value.length >= 10) {
+//                 validate_shomareshasi_keshavarzi = 1;
+//             }
+//
+//             var validate_pelak_keshavarzi = 0;
+//             if (
+//                 document.formreserve.txtnation0.value.length == 2 &&
+//                 document.formreserve.txtnation3.value.length == 3 &&
+//                 document.formreserve.txtnation1.value.length == 2 &&
+//                 document.formreserve.txtnation2.value != "0"
+//             ) {
+//                 validate_pelak_keshavarzi = 1;
+//             }
+//
+//             if (!validate_pelak_keshavarzi && !validate_shomareshasi_keshavarzi) {
+//                 toast_error("لطفا شماره پلاک یا شماره شاسی وسیله نقلیه را بصورت کامل وارد نمایید");
+//                 return false;
+//             }
+//
+//
+//         }
+//
+//
+//     }
+//
+//     return( true );
+// }

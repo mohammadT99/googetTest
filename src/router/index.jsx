@@ -3,12 +3,13 @@ import SingleProductPage from "../pages/product";
 import Products from "../components/common/Product";
 import Productlayout from "../layouts/productlayout";
 import { Counter } from "../pages/home/counter";
+import Login from "../pages/auth";
 
 const router = createBrowserRouter([
   {
     path: "/",
     index: false,
-    element: <Counter /> ,
+    element: <Login /> ,
   },
   {
     path: "product",
