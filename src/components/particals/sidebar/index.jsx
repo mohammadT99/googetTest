@@ -9,12 +9,13 @@ const SideBar = () => {
   const [category , setCategory] = useState([]);
   const getcategory = async () => {
     try {
-      const {data} = await Api.get('products/categories');
-      setCategory(data)
+      const {data} = await Api.get('brands');
+      setCategory(data.data)
     } catch(e) {
       console.log('ddd');
     }
   }
+  console.log(category.rows);
   useEffect (() => {
     getcategory()
   } , [])
@@ -27,7 +28,7 @@ const SideBar = () => {
             <div className="col-12">
               <FilterBox />
               <DropDown name="کار کرده" id="0" />
-              <DropDown name=" دسته بندی" body={category} queryKey="category" />
+              <DropDown name=" دسته بندی" body={category.rows} queryKey="category" />
               <DropDown name=" انتخاب فروشنده" id="2"/>
               <DropDown name=" محدوده قیمت ها " id="3" />
               <BrandBox />

@@ -4,12 +4,13 @@ import Products from "../components/common/Product";
 import Productlayout from "../layouts/productlayout";
 import { Counter } from "../pages/home/counter";
 import Login from "../pages/auth";
+import AboutPage from "../pages/about/index"
 
 const router = createBrowserRouter([
   {
     path: "/",
     index: false,
-    element: <Login /> ,
+    element: <AboutPage />
   },
   {
     path: "product",

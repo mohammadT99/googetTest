@@ -7,7 +7,7 @@ import {
   createSearchParams,
 } from "react-router-dom";
 
-const DropDown = ({ name, id, body = [], queryKey = "" }) => {
+const DropDown = ({ name, id, body , queryKey = "" }) => {
   
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -39,10 +39,10 @@ const DropDown = ({ name, id, body = [], queryKey = "" }) => {
         </Accordion.Header>
         <Accordion.Body>
           <div className="drop__down">
-            {body?.map((b, i) => {
+            {body?.map((b , i) => {
               return (
-                <button onClick={() => addToQuery(b)} key={i}>
-                  {b}
+                <button className="btn btn-primary" onClick={() => addToQuery(b)} key={i}>
+                  {b.name}
                 </button>
               );
             })}

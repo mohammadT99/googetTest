@@ -5,11 +5,24 @@ import SideBar from "../../components/particals/sidebar";
 import BreadCrumb from "../../components/common/breadcrumb";
 import Banner from "../../components/common/banner";
 
-import { Outlet } from "react-router-dom";
+import {  Outlet, useNavigate } from "react-router-dom";
+import Cookies from "js-cookie";
+
+
 
 const Productlayout = () => {
+
+ const navigate = useNavigate()
+
+  const handlelogout = () => {
+    // console.log('kkkk');
+    Cookies.remove('user');
+    // console.log('kkk', Cookies.get('user'));
+    navigate("/")
+  }
   return (
     <>
+     
       <Header />
       <div className="container ">
         <div className="row">
@@ -18,7 +31,7 @@ const Productlayout = () => {
             <div className="content">
               <BreadCrumb />
               <Outlet />
-              
+              <button type="button" onClick={handlelogout}>logout</button>
             </div>
           </div>
         </div>
