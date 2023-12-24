@@ -8,50 +8,74 @@ import { render } from "@testing-library/react";
 import { Navigator } from "react-router-dom";
 
 const AboutPage = () => {
-    const [lautitude , setLatitude] = useState(36.2072189);
-    const [ longitude , setLongitude] =useState(58.7933588);
-    const [location , setLocation] = useState([36.2072189 ,58.7933588]);
-    // let location = [51.505 , -0.09]
-    const handleLocation = () => {
-        if ('geolocation' in navigator) {
-            navigator.geolocation.getCurrentPosition((position) => {
-                setLatitude(position.coords.latitude);
-                setLongitude(position.coords.longitude);
-            })
-            
-        }
-        setLocation({
-           lat: lautitude ,
-           lng: longitude
-        });
+  // ========================= states =========== //
+  // let location = [51.505 , -0.09]
+  const [lautitude, setLatitude] = useState(36.2072189);
+  const [longitude, setLongitude] = useState(58.7933588);
+  const [location, setLocation] = useState([36.2072189, 58.7933588]);
+  const [requestLat , setRequestLat] = useState() ; 
+  const [requestLong , setRequestLong] = useState();
+
+  // =================== functions ================ //
+  // function Register location automatically
+  const handleLocation = () => {
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition((position) => {
+        setLatitude(position.coords.latitude);
+        setLongitude(position.coords.longitude);
+      });
     }
-    
-    console.log( 'lat:',lautitude , 'long:' , longitude );
-    console.log( 'location:', location)
- 
+    setLocation({
+      lat: lautitude,
+      lng: longitude,
+    });
+  };
+
+  console.log("lat:", lautitude, "long:", longitude);
+  console.log("location:", location);
+
+  // function Registration of location manually
+  const handleSubmit = () =>{
+    setLocation({
+      lat: requestLat,
+      lng: requestLong,
+    });
+  }
+  // ================== jsxs ================== //
+
   return (
     <div className="container map-wrapper">
       <div className=" map">
-        <MapContainer
-          center={location }
-          zoom={20}
-          scrollWheelZoom={false}
-        >
+        <MapContainer center={location} zoom={20} scrollWheelZoom={false}>
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
           <Marker position={location}>
             <Popup>
-             مکان شما  <br /> 
+              مکان شما <br />
             </Popup>
           </Marker>
         </MapContainer>
-        <form action="#" className="form-group mt-3 col-6">
-            <label htmlFor="let">تنظیم دستی مکان</label>
-            <input id="let"  type="text" className="input-group mt-2 rounded-2 px-2" placeholder="let :را وارد کنید" />
-            <input id="let" type="text" className="input-group mt-2 rounded-2 px-2" placeholder="long :را وارد کنید" />
-            <button onClick={handleLocation} className="btn btn-primary mt-3">
+        <form action="#" onSubmit={handleSubmit} className="form-group mt-3 col-6">
+          <label htmlFor="let">تنظیم دستی مکان</label>
+          <input
+            id="let"
+            type="text"
+            className="input-group mt-2 rounded-2 px-2"
+            placeholder="let :را وارد کنید"
+            onChange={(e) => setRequestLat(e.target.value)}
+          />
+          <input
+            id="let"
+            type="text"
+            className="input-group mt-2 rounded-2 px-2"
+            placeholder="long :را وارد کنید"
+            onChange={(e) =>setRequestLong( e.target.value)}
+          />
+          <button type="submit" className="btn btn-outline-primary mt-3">افزودن دستی مکان</button>
+        </form>
+        <button onClick={handleLocation} className="btn btn-primary mt-3">
           <span>
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -80,8 +104,6 @@ const AboutPage = () => {
           </span>
           افزودن مکان
         </button>
-        </form>
-        
       </div>
     </div>
   );
