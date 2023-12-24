@@ -5,12 +5,17 @@ import Productlayout from "../layouts/productlayout";
 import { Counter } from "../pages/home/counter";
 import Login from "../pages/auth";
 import AboutPage from "../pages/about/index"
+import CroperImage from "../pages/croperimage";
+import App from '../pages/test/index'
+import Demo from "../pages/test/index";
+
+
 
 const router = createBrowserRouter([
   {
     path: "/",
     index: false,
-    element: <AboutPage />
+    element: <Demo />
   },
   {
     path: "product",
